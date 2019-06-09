@@ -1,0 +1,280 @@
+% Cross-compile OpenBOR engine for Windows on Linux
+% Wasin Thonkaew
+% June 9, 2019
+
+Cross-compile OpenBOR engine for Windows on Linux
+=================================================
+
+This guide is for Linux users who want to provide Windows build for your Windows-based users with
+convenient on using your favourite system; in this case Linux.
+
+The steps presented here is *manual*. I might implement this as PR then send to OpenBOR on github to
+automate all this process in the future.
+
+System & Package Requirement
+========================================
+
+System and packages used in writing this guide is as follows
+
+- Linux, Ubuntu 18.04
+- `build-essential` package
+- `mingw-w64` package for cross-compile toolchain
+- `gcc-multilib` package for relevant headers which will be needed for to satisfy compiling `libvpx`
+
+You can install above relevant packages via `sudo apt install <package-name>`.
+
+What We Get
+============
+
+32-bit statically linked Windows executable file.
+
+*Note*: By default OpenBOR will build static linked version of executable for Windows, but dyanmic
+linking for Linux. It's good to have static linked executable for Windows, you have no need to
+provide all those `.dll` files to users.
+
+Dependencies of OpenBOR
+=======================
+
+- [SDL2]
+- [zlib]
+- [libogg]
+- [libvorbis]
+- [libpng]
+- [libvpx]
+
+Suggested to download source tarball of above dependencies to your system, not just install dev
+package from package manager i.e. `apt` so you have better ground and flexibility in building
+not just OpenBOR engine, but other relevant software package, and its dependencies for various
+platform i.e. Android yourself without a need to ask and wait for pre-built libraries.
+
+You can place all those dependencies in your desire location. In my case, I drop them in
+`~/Data/src` directory. So if I ever need one of them to be built, I go there and do cross-compile.
+
+Steps
+======
+
+Make Changes to OpenBOR's Build System Source Code
+---------------------------------------------------
+
+We're not going to make actual engine's source here, but just its build system source for the
+following files.
+
+1. `environ.sh` - a script to detect your system environments then properly set them
+2. `Makefile`   - actual Makefile script
+
+### `environ.sh` ###
+Add the following lines right after a large code block comment indicating that it's "Windows
+Environment".
+
+      if test -e "/usr/bin/i686-w64-mingw32-gcc"; then
+        export WINDEV=/usr/bin
+        export SDKPATH=/usr/lib/gcc/i686-w64-mingw32
+        export PREFIX=i686-w64-mingw32-
+        export PATH=$WINDEV:$PATH
+
+Then change `if test -e` of next statement block to be `elif test -e`.
+
+We check for `i686-w64-mingw32-gcc` then use it as a prefix text[^1]; in the future when OpenBOR
+supports 64-bit, we will use `x86_64-w64-mingw32-gcc`.
+
+### `Makefile` ###
+Change `INCLUDES` line within `ifdef BUILD_WIN` into
+
+    INCLUDES      = $(SDKPATH)/include \
+                    $(SDKPATH)/include/SDL2 \
+                    /tmp/sdl2-win32/include/SDL2 \
+                    /tmp/zlib-win32/include \
+                    /tmp/libogg-win32/include \
+                    /tmp/libvorbis-win32/include \
+                    /tmp/libpng-win32/include \
+                    /tmp/libvpx-win32/include
+
+and change `LIBRARIES` into
+
+    LIBRARIES     = $(SDKPATH)/lib \
+                    $(SDKPATH)/7.3-win32 \
+                    /tmp/sdl2-win32/lib \
+                    /tmp/zlib-win32/lib \
+                    /tmp/libogg-win32/lib \
+                    /tmp/libvorbis-win32/lib \
+                    /tmp/libpng-win32/lib \
+                    /tmp/libvpx-win32/lib
+
+*Notice* that I use `/tmp/<package>/include` or `/tmp/<package>/lib` as these are the result from
+cross-compile of those dependencies in which we will be dealing with next. You can change it to
+your desire location i.e. might the future you will need it, so change it to more permanent location,
+etc.
+
+Next, we will fix how build system gather our `LIBRARIES` line by line into correct form.
+
+Change
+
+    LIBS           += -Wl,-rpath,$(LIBRARIES) -lSDL2
+
+into
+
+    COMMA           = ,
+    RPATH_LIBS      = $(addprefix -Wl$(COMMA)-rpath$(COMMA),"$(LIBRARIES)")
+    LIBS            += $(RPATH_LIBS) -lSDL2 -lsetupapi -lhid
+
+it fixes to properly feed `-rpath` parameter line by line into `gcc` toolchain in linking phase, and
+we also add `-lsetupapi -lhid` to fix the undefined symbols when linking with SDL2.
+
+Finally, inside `ifdef BUILD_WEBM` change
+
+    LIBS           += -lvpx
+
+to
+
+    LIBS           += -lvpx -lpthread
+
+This to fix problem of undefined symbol of those functions in pthread used by *libvpx*.
+
+Cross-Compile All Dependencies
+------------------------------
+
+For this section, We will use `~/Data/src` at the location to hold all dependencies' tarball source
+file after you extracted them, and `/tmp/<package-name>` is the place to hold result of cross-compile
+for each dependency.
+
+Anyway, you are free to use your desire location as needed.
+
+This section expected you to downloaded all relevant tarball source file, extracted them and placeed
+them all at `~/Data/src` already.
+
+### SDL2 ###
+
+As of this writing, the stable version is `2.0.9`, I've tested. It's compatible with OpenBOR's latest
+code.
+
+- `cd` into the library directory
+- `mkdir build-win32` to create a new directory for our operation in building
+- `../configure --prefix=/tmp/sdl2-win32 --host=i686-x64-mingw32`
+- `make -j4`
+- `make install`
+
+You can try to check the result in `/tmp/sdl2-win32`. If successfully done, you will see file
+structure similar to the following[^2].
+
+    $ tree /tmp/sdl2-win32
+    /tmp/sdl2-win32
+    ├── bin
+    │   ├── sdl2-config
+    │   └── SDL2.dll
+    ├── include
+    │   └── SDL2
+    │       ├── begin_code.h
+    │       ├── close_code.h
+    │       ├── SDL_assert.h
+    │       ├── SDL_atomic.h
+    │       └── .... header files
+    ├── lib
+    │   ├── cmake
+    │   │   └── SDL2
+    │   │       └── sdl2-config.cmake
+    │   ├── libSDL2.a
+    │   ├── libSDL2.dll.a
+    │   ├── libSDL2.la
+    │   ├── libSDL2main.a
+    │   ├── libSDL2main.la
+    │   ├── libSDL2_test.a
+    │   ├── libSDL2_test.la
+    │   └── pkgconfig
+    │       └── sdl2.pc
+    └── share
+        └── aclocal
+            └── sdl2.m4
+
+    9 directories, 85 files
+
+Notice `.dll` file also output at `bin` directory. We don't use it as we do statically link, instead
+what we need is `.a` file inside `lib` directory.
+
+### zlib ###
+
+As of this writing, it's version 1.2.11.
+
+- modify `win32/Makefile.gcc` for the following line
+
+          PREFIX =
+
+    into
+
+          PREFIX = i686-w64-mingw32-
+
+- `./configure` - just to get us required file `zconf.h`, no need to specify any parameters at this
+point
+
+- `make -fwin32/Makefile.gcc` - make sure you execute from the root directory of zlib directory
+
+- `make install -fwin32/Makefile.gcc SHARED_MODE=1 INCLUDE_PATH=/tmp/zlib-win32/include 
+LIBRARY_PATH=/tmp/zlib-win32/lib BINARY_PATH=/tmp/zlib-win32/bin`
+
+### libogg ###
+
+As of this writing, it's version 1.3.3.
+
+- `./configure --prefix=/tmp/libogg-win32 --host=i686-w64-mingw32`
+- `make -j4`
+- `make install`
+
+### libvorbis ###
+
+As of this writing, it's version 1.3.6.
+`libvorbis` depends on `libogg`, so make sure you build `libogg` first.
+
+- `CFLAGS=-I/tmp/libogg-win32/include LDFLAGS=-L/tmp/libogg-win32/lib ./configure 
+--prefix=/tmp/libvorbis-win32 --host=i686-w64-mingw32`
+- `make -j4`
+- `make install`
+
+### libpng ###
+
+As of this writing, it's version 1.6.37, but I tested with 1.6.36. Anyway, using newer version
+should be fine.
+
+`libpng` depends on `zlib`.
+
+- `CFLAGS=-I/tmp/zlib-win32/include CPPFLAGS=-I/tmp/zlib-win32/include LDFLAGS=-L/tmp/zlib-win32/lib 
+./configure --prefix=/tmp/libpng-win32 --host=i686-w64-mingw32`
+- `make -j4`
+- `make install`
+
+### libvpx ###
+
+A little bit more tricky compared to all others above. If you read carefully of instruction as shown
+in front over its github project, you will make it works.
+
+- make sure you have installed `gcc-multilib` package i.e. use `sudo apt install gcc-multilib`.
+- `CROSS=i686-w64-mingw32- ./configure --prefix=/tmp/libvpx-win32 --target=generic-gnu --enabled-shared` - 
+we tell it to also output shared library for us; notice that output is in `.so` extension, but actually its
+`.dll` compatible file.
+- `make -j4`
+- `make install`
+
+Final Words
+============
+
+That's it. You have successfully cross-compile OpenBOR engine for Windows on Linux.
+Now you can distribute the result `OpenBOR.exe` along with your `.pak` file to your Windows users 
+without a need to also distribute its dependency `.dll` file.
+
+[^1]: OpenBOR currently only support 32-bit Windows executable.
+[^2]: Use `tree` package to list file structure to get result as shown.
+
+Author
+======
+Copyright 2019 Wasin Thonkaew (wasin@abzi.co), 气包子 (Angry Baozi) [abzi.co].
+In case of reprinting, or to do anything with the article you're unsure of, please write me e-mail.
+
+This article published on June 9, 2019.
+
+Comments, or suggestions, please send me email.
+
+[abzi.co]: https://abzi.co
+[SDL2]: https://www.libsdl.org/
+[zlib]: https://www.zlib.net/
+[libogg]: https://xiph.org/ogg/
+[libvorbis]: https://xiph.org/vorbis/
+[libpng]: http://www.libpng.org/pub/png/libpng.html
+[libvpx]: https://github.com/webmproject/libvpx/
