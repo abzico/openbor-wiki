@@ -2,7 +2,7 @@
 The file structure is to host as website on server.
 
 * `index.html` is the first page users will see at your web server `.../openbor-wiki` path.
-* `src` is directory that holds the source for editing posts in `.txt` format which finally will be manually converted into `.html` with `pandoc` tool via `pandoc filename.txt -o filename.html` or similary `pandoc -s filename.txt -o filename.html`.
+* `src` is directory that holds the source for editing posts in `.txt` format which finally will be manually converted into `.html` with `pandoc` tool via `pandoc -B header.html filename.txt -o filename.html` or similary `pandoc -s -B header.html filename.txt -o filename.html`.
 * `.html` files will live in `posts` directory.
 
 This project doesn't aim to provide good looking website thus style. Pure focus on content as reference, and to be useful for OpenBOR users.
