@@ -1,7 +1,3 @@
-% Cross-compile OpenBOR engine for Windows on Linux
-% Wasin Thonkaew
-% June 9, 2019
-
 Cross-compile OpenBOR engine for Windows on Linux
 =================================================
 
