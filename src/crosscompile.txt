@@ -252,7 +252,7 @@ Summing-it-Up Building OpenBOR
 ------------------------------
 Now we can head back to the root directory of OpenBOR, then execute
 
-  ./build.sh 5
+    ./build.sh 5
 
 it will detect that we're proper toolchains, then finally build Windows build for us on Linux.
 
