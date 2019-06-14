@@ -168,16 +168,26 @@ LIBS            += $(RPATH_LIBS) -lSDL2 -lsetupapi -lhid</code></pre>
 <p>A little bit more tricky compared to all others above. If you read carefully of instruction as shown in front over its github project, you will make it works.</p>
 <ul>
 <li>make sure you have installed <code>gcc-multilib</code> package i.e. use <code>sudo apt install gcc-multilib</code>.</li>
-<li><code>CROSS=i686-w64-mingw32- ./configure --prefix=/tmp/libvpx-win32 --target=generic-gnu --enabled-shared</code> - we tell it to also output shared library for us; notice that output is in <code>.so</code> extension, but actually its <code>.dll</code> compatible file.</li>
+<li><code>CROSS=i686-w64-mingw32- ./configure --prefix=/tmp/libvpx-win32 --target=generic-gnu --enable-shared</code> - we tell it to also output shared library for us; notice that output is in <code>.so</code> extension, but actually its <code>.dll</code> compatible file.</li>
 <li><code>make -j4</code></li>
 <li><code>make install</code></li>
 </ul>
+<h2 id="summing-it-up-building-openbor">Summing-it-Up Building OpenBOR</h2>
+<p>Now we can head back to the root directory of OpenBOR, then execute</p>
+<p>./build.sh 5</p>
+<p>it will detect that we're proper toolchains, then finally build Windows build for us on Linux.</p>
+<p>You can see the result in <code>engine/releases/WINDOWS/OpenBOR/</code>.</p>
 <h1 id="final-words">Final Words</h1>
 <p>That's it. You have successfully cross-compile OpenBOR engine for Windows on Linux. Now you can distribute the result <code>OpenBOR.exe</code> along with your <code>.pak</code> file to your Windows users without a need to also distribute its dependency <code>.dll</code> file.</p>
 <h1 id="author">Author</h1>
 <p>Copyright 2019 Wasin Thonkaew (wasin@abzi.co), 气包子 (Angry Baozi) <a href="https://abzi.co">abzi.co</a>. In case of reprinting, or to do anything with the article you're unsure of, please write me e-mail.</p>
 <p>This article published on June 9, 2019.</p>
 <p>Comments, or suggestions, please send me email.</p>
+<h1 id="updates">Updates</h1>
+<ul>
+<li>2019-06-13 - typo, use <code>--enable-shared</code> instead of <code>--enabled-shared</code> in <code>libvpx</code> section.</li>
+<li>2019-06-14 - added a missing section of finally building OpenBOR binary. Poor me :)</li>
+</ul>
 <div class="footnotes">
 <hr />
 <ol>

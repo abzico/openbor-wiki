@@ -242,11 +242,21 @@ A little bit more tricky compared to all others above. If you read carefully of 
 in front over its github project, you will make it works.
 
 - make sure you have installed `gcc-multilib` package i.e. use `sudo apt install gcc-multilib`.
-- `CROSS=i686-w64-mingw32- ./configure --prefix=/tmp/libvpx-win32 --target=generic-gnu --enabled-shared` - 
+- `CROSS=i686-w64-mingw32- ./configure --prefix=/tmp/libvpx-win32 --target=generic-gnu --enable-shared` - 
 we tell it to also output shared library for us; notice that output is in `.so` extension, but actually its
 `.dll` compatible file.
 - `make -j4`
 - `make install`
+
+Summing-it-Up Building OpenBOR
+------------------------------
+Now we can head back to the root directory of OpenBOR, then execute
+
+  ./build.sh 5
+
+it will detect that we're proper toolchains, then finally build Windows build for us on Linux.
+
+You can see the result in `engine/releases/WINDOWS/OpenBOR/`.
 
 Final Words
 ============
@@ -266,6 +276,12 @@ In case of reprinting, or to do anything with the article you're unsure of, plea
 This article published on June 9, 2019.
 
 Comments, or suggestions, please send me email.
+
+Updates
+===
+
+* 2019-06-13 - typo, use `--enable-shared` instead of `--enabled-shared` in `libvpx` section.
+* 2019-06-14 - added a missing section of finally building OpenBOR binary. Poor me :)
 
 [abzi.co]: https://abzi.co
 [SDL2]: https://www.libsdl.org/
