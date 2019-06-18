@@ -20,13 +20,14 @@ print_help()
   echo "Usage: make <operation> [options]"
   echo ""
   echo "<operation> is available as follows"
-  echo "  new   - Create a new post."
+  echo "  new   - Create a new post, or continue Editing if a file exists."
   echo ""
   echo "          Usgae: new <filename.txt>"
   echo ""
-  echo "          This will create a new post .txt at src/ directory, then execute 'inotifywait' for"
-  echo "          automatically update changes then write as output .html at posts/ directory,"
-  echo "          then finally open a browser tab using firefox."  
+  echo "          This will create a new post .txt at src/ directory if a file not exist, otherwise"
+  echo "          ask to overwrite or continue editing from existing content, then execute"
+  echo "          'inotifywait' for automatically update changes then write as output .html at"
+  echo "          posts/ directory, then finally open a browser tab using firefox."  
   echo ""
 }
 
@@ -56,24 +57,19 @@ if [ "$CMD" == "new" ]; then
     read -p "Overwrite [N/y]: " confirm
 
     # not overwrite
-    if [ -z $confirm ]; then
-      exit 1
-    fi
-
-    # not overwrite
     # convert to smaller case
     cconfirm=`echo "$confirm" | tr '[:upper:]' '[:lower:]'`
-    if [ "$cconfirm" == "n" ]; then
-      exit 1
-    fi
   fi
 
-  # write file to src/
-  printf "Your Post Title\n---------" > "src/$2" && echo "Wrote source file 'src/$2'"
-  # show error message when things went wrong
-  if [ $? -ne 0 ]; then
-    echo "Error: Can't wrote file"
-    exit 1
+  # if confirmed to overwrite
+  if [ "$cconfirm" == "y" ]; then
+    # write file to src/
+    printf "Your Post Title\n---------" > "src/$2" && echo "Wrote source file 'src/$2'"
+    # show error message when things went wrong
+    if [ $? -ne 0 ]; then
+      echo "Error: Can't wrote file"
+      exit 1
+    fi
   fi
 
   # create posts directory if not yet exist
