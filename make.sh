@@ -28,7 +28,6 @@ print_help()
   echo "          automatically update changes then write as output .html at posts/ directory,"
   echo "          then finally open a browser tab using firefox."  
   echo ""
-  echo "  build - Create a final built ready for deploy."
 }
 
 if [ -z "$CMD" ]; then
@@ -51,30 +50,47 @@ if [ "$CMD" == "new" ]; then
     exit 1
   fi
 
+  # check if there's existing source file, to avoid overwriting
+  if [ -f "src/$2" ]; then
+    echo "Target source file 'src/$2' exists"
+    read -p "Overwrite [N/y]: " confirm
+
+    # not overwrite
+    if [ -z $confirm ]; then
+      exit 1
+    fi
+
+    # not overwrite
+    # convert to smaller case
+    cconfirm=`echo "$confirm" | tr '[:upper:]' '[:lower:]'`
+    if [ "$cconfirm" == "n" ]; then
+      exit 1
+    fi
+  fi
+
   # write file to src/
-  touch "src/$2" && echo "Wrote source file 'src/$2'"
+  printf "Your Post Title\n---------" > "src/$2" && echo "Wrote source file 'src/$2'"
   # show error message when things went wrong
   if [ $? -ne 0 ]; then
     echo "Error: Can't wrote file"
     exit 1
   fi
 
-  # create .dirty directory if not yet exist
-  if [ ! -d .dirty ]; then
-    mkdir .dirty
-    echo "Created temporary directory"
+  # create posts directory if not yet exist
+  if [ ! -d posts ]; then
+    mkdir posts
+    echo "Created posts/ directory"
   fi
 
-  # write a correct from conversion from pandoc now
-  # so we can execute inotifywait in loop
-  printf "<h2 id=\"title\">Your Post Title</h2>" > ".dirty/${2%%.*}.html"
+  # pre-convert so users can see the result of .html now
+  pandoc -B header.html "src/$2" -o "posts/${2%%.*}.html"
 
   # now open the browser tab
-  ${BROWSER} .dirty/${2%%.*}.html
+  ${BROWSER} posts/${2%%.*}.html
 
   # wait and listen to file changes event for writing
   # note: don't try to execute this in the background, it's mess to clean up later
-  while inotifywait -e modify "src/$2" || true; do pandoc "src/$2" -o ".dirty/${2%%.*}.html" ; done
+  while inotifywait -e modify "src/$2" || true; do pandoc "src/$2" -o "posts/${2%%.*}.html" ; done
   # show error messasge when things went wrong
   if [ $? -ne 0 ]; then
     echo "Can't listen to file changes event"
