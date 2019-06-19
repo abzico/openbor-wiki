@@ -1,0 +1,207 @@
+<h1 id="build-all-android-dependencies-via-cross-compile-on-linux">Build all Android dependencies via cross-compile on Linux</h1>
+<p>(This post is as port of <a href="../">OpenBOR wiki</a> series)</p>
+<p>To be able to build Android build of OpenBOR, we need to prepare all of required dependencies like what we did when we <a href="../posts/crosscompile.html">cross-compile normal PC build</a>.</p>
+<p>We will use Android's NDK toolchain specifically its <code>19c</code> version as it has better support for its Android toolchain to build autotools-based library to arm architecture.</p>
+<p>This post is written after my <a href="https://github.com/DCurrent/openbor/pull/162">PR</a> of adding 64-bit library support into OpenBOR has been merged. This post will mainly focus on how to build all dependencies. But for how it is integrated into Android build system (<code>gradle</code>) as part of OpenBOR, please take a look in the link above.</p>
+<h1 id="system-package-requirement">System &amp; Package Requirement</h1>
+<p>System and packages used in writing this guide is as follows</p>
+<ul>
+<li>Linux, Ubuntu 18.04</li>
+<li><code>build-essential</code> package</li>
+<li><code>gcc-arm-linux-gnueabi</code>, and <code>gcc-aarch64-linux-gnu</code> package for cross-compile toolchain specifically for building <code>libvpx</code></li>
+<li><code>gcc-multilib</code> package for relevant headers which will be needed for to satisfy compiling <code>libvpx</code></li>
+<li>Android NDK version <code>19c</code></li>
+<li><a href="https://github.com/abzico/androidbuildlib">androidbuildlib</a>, my tool to conveniently help in building autotools-based library for multiple arm architectures at once for Android</li>
+<li>source tarball or repo clone of all dependencies to be built, see <em>Depencencies</em> section</li>
+</ul>
+<p>You can install above relevant packages via <code>sudo apt install &lt;package-name&gt;</code>.</p>
+<h1 id="dependencies">Dependencies</h1>
+<ol style="list-style-type: decimal">
+<li><a href="https://xiph.org/downloads/">libogg</a> - v. 1.3.3</li>
+<li><a href="http://www.libpng.org/pub/png/libpng.html">libpng</a> - v. 1.6.36</li>
+<li><p><a href="https://hg.libsdl.org/SDL/file/cb546477e34f">libSDL2</a> - <strong>specific</strong> at commit <code>cb546477e34f</code></p>
+Follow the link, then use the link <code>gz</code> at the top to download its source tarball for this specific version. The reason to use this specific version is that OpenBOR is not ready yet to be integrated with HDAPI, it dramatically changes things which required OpenBOR side to be migrated. This specific version is latest before such change introduced (although still 10 months old).</li>
+<li><p><a href="https://git.xiph.org/?p=tremor.git">libvorbis - tremor</a> - <strong>specific</strong> at commit 7c30a66</p>
+<strong>DO NOT</strong> use normal <code>libvorbis</code> for this as it's not the same. This one is branching off as <strong>tremor</strong> providing an integer-only implementation of the decoder for embedded devices<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>.</li>
+<li><p><a href="https://github.com/webmproject/libvpx/releases">libvpx</a> - v. 1.8.0</p></li>
+</ol>
+<h1 id="android-ndk-setup">Android NDK Setup</h1>
+<p>It's out of scope for this post to cover every detail about how to setup Android development environment on Linux. Please make sure you find relevant information about there.</p>
+<p>The things we need to pay attention to is dowload a correcrt version of NDK. In this case, it's <code>19c</code> from <a href="https://developer.android.com/ndk/downloads">NDK Downloads</a>. Mine placed at <code>/home/haxpor/androidsdk/ndk-bundle/android-ndk-r19c</code>. But you could place it anywhere.</p>
+<p>Then make sure you have defined the following environment variables i.e. in your <code>~/.bash_aliases</code>.</p>
+<ol style="list-style-type: decimal">
+<li><code>export ANDROID_NDK_HOME=/home/haxpor/androidsdk/ndk-bundle/android-ndk-r19c</code></li>
+<li><code>export ANDROID_NDK_SYSROOT=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot</code></li>
+</ol>
+<h1 id="androidbuildlib">androidbuildlib</h1>
+<p>This tool is bash script tool that I've implemented with primary goal to help in building those autotools-based libraries to work with Android project.</p>
+<p>Basically behind the scene, it will set relevant environment variables such as <code>CC</code>, <code>CXX</code>, <code>AR</code>, <code>RANLIB</code>, <code>LD</code>, <code>STRIP</code>, etc as well as setting proper intrinsics compilation flags when you compile for a certain architecture i.e. <code>armeabi-v7a</code>, <code>arm64-v8a</code>, <code>x86</code>, or <code>x64_64</code> so you will link against NEON capability on arm architecture properly, not to mention it helps sending additional parameters to <code>configure</code> script of such library in case you need it.</p>
+<p>Surely you can try to research and do above manually, but it will take tremondous of time to be able to build several of libraries each for various of target architectures.</p>
+<p>Install this tool by download <a href="https://raw.githubusercontent.com/abzico/androidbuildlib/master/androidbuildlib">androidbuildlib</a> then place it in your executable path i.e. <code>/usr/local/bin/</code>. Then test it by executing the following command</p>
+<pre><code>androidbuildlib --help</code></pre>
+<p>You should see a proper help message.</p>
+<h1 id="building">Building</h1>
+<p>By default, <code>configure</code> will build the library with debug-info (<code>-g</code>) and optimization level (<code>-O2</code>). Thus we just have to check and make sure result library has those information.</p>
+<blockquote>
+<p>Also, it would be complicated to prepare both debug and release build set of libraries to be used with OpenBOR's Android build. Although it is always nice to have but not immediately benefit OpenBOR users and their usual usage. By just providing only a release + debug-info set of libraries as pre-built library then embed into the repository, almost users will always invest their time in testing a version that is going to be shipped without a need to switch back and forth between debug and release build. Most OpenBOR users will debug the game on PC first, they do quick iteration there first before moving on to Android.</p>
+</blockquote>
+<p>Our target is to build for <code>armeabi-v7a</code> and <code>arm64-v8a</code> with debug-info for all libraries, with minimum sdk version of 19<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>.</p>
+<p>Now let's get into how to build each library for Android via cross-compile on Linux</p>
+<h2 id="libogg">libogg</h2>
+<pre><code>androidbuildlib out_path=.build_arms minsdkversion=19 target_abis=&quot;arm64-v8a armeabi-v7a&quot;</code></pre>
+<p>This will build the library using minimum sdk version of 19 with target architectures of <code>arm64-v8a</code> and <code>armeabi-v7a</code> as targets, then output results into <code>./build_arms</code> directory.</p>
+<p>Inside <code>./build_arms</code> directory, you will see the following file structure as results.</p>
+<pre><code>.build_arms
+├── arm64-v8a
+│   ├── include
+│   │   └── ogg
+│   │       ├── config_types.h
+│   │       ├── ogg.h
+│   │       └── os_types.h
+│   ├── lib
+│   │   ├── libogg.a
+│   │   ├── libogg.la
+│   │   ├── libogg.so
+│   │   └── pkgconfig
+│   │       └── ogg.pc
+│   └── share
+│       ├── aclocal
+│       │   └── ogg.m4
+│       └── doc
+│           └── libogg
+│               ├── fish_xiph_org.png
+│               ├── ...
+│               └── white-xifish.png
+└── armeabi-v7a
+    ├── include
+    │   └── ogg
+    │       ├── config_types.h
+    │       ├── ogg.h
+    │       └── os_types.h
+    ├── lib
+    │   ├── libogg.a
+    │   ├── libogg.la
+    │   ├── libogg.so
+    │   └── pkgconfig
+    │       └── ogg.pc
+    └── share
+        ├── aclocal
+        │   └── ogg.m4
+        └── doc
+            └── libogg
+                ├── fish_xiph_org.png
+                ├── ...
+                └── white-xifish.png
+
+20 directories, 182 files</code></pre>
+<p>We are interested in library files inside <code>lib/</code> directory. You can use the following commands to check its architecture, and whether or not it has debug-info as expected.</p>
+<ol style="list-style-type: decimal">
+<li><code>readelf -h lib.so</code> - check architecture of this library. It works on both <code>.a</code>, or <code>.so</code>.</li>
+<li><code>readelf -w lib.so</code> - check whether debug-info is there in target library file.</li>
+</ol>
+<h2 id="libpng">libpng</h2>
+<p>Just execute the following command</p>
+<pre><code>  androidbuildlib out_path=.build_arms minsdkversion=19 target_abis=&quot;arm64-v8a armeabi-v7a&quot;</code></pre>
+<h2 id="libsdl2">libSDL2</h2>
+<p>SDL2 seems to incorrectly detects to use <code>pulseaudio</code> and <code>wayland</code> support when we build for Android, even though I cleaned or started fresh. Then we have to manually supply the flags to disable those two features.</p>
+<pre><code>androidbuildlib out_path=.build_arms minsdkversion=19 target_abis=&quot;armeabi-v7a arm64-v8a&quot; configure_params=&quot;--enable-video-wayland=no --enable-pulseaudio=no&quot;</code></pre>
+<p>Additional parameters to <code>configure</code> script can be passed via <code>configure_params</code> option.</p>
+<p>We have additional step to make sure its <code>SONAME</code> is literally <code>libSDL2.so</code> so we don't have to name the dynamic shared library file as something like <code>libSDL2-2.0.so.0.8.0</code>. You can try to check its generated <code>SONAME</code> first via</p>
+<pre><code>objdump -p /path/to/libSDL2.so | grep SONAME</code></pre>
+<p>Most likely you will see result of <code>SONAME               libSDL2-2.0.so.0</code>. That means at run-time it will search for such name in loading dynamic object which is not possible as in <code>Android.mk</code> you can only specify <code>.so</code> at the end of library name, no others.</p>
+<p>We use <a href="https://github.com/NixOS/patchelf">patchelf</a> tool to help us with this. You then execute the command against resulting dynamic shared library like this</p>
+<pre><code>patchelf --set-soname libSDL2.so /path/to/libSDL2.so</code></pre>
+<p>Now check with <code>objdump</code> tool again, you will see its <code>SONAME</code> is updated to what we set.</p>
+<h2 id="libvorbis---tremor">libvorbis - tremor</h2>
+<p>A little bit more of effort is needed to build <code>tremor</code>. Follow the following steps.</p>
+<ol style="list-style-type: decimal">
+<li><code>./autogen.sh</code></li>
+<li>Comment out line 12487 in <code>configure</code>. That line is</li>
+</ol>
+<blockquote>
+<pre><code>XIPH_PATH_OGG(, as_fn_error $? &quot;must have Ogg installed!&quot; &quot;$LINENO&quot; 5)</code></pre>
+<p>as I have problem and not able to proceed, anyway commenting out that line has no problem as tested.</p>
+</blockquote>
+<ol start="3" style="list-style-type: decimal">
+<li>Change the following block of code</li>
+</ol>
+<blockquote>
+<pre><code>if BYTE_ORDER==LITTLE_ENDIAN
+union magic {
+struct {
+  ogg_int32_t lo;
+  ogg_int32_t hi;
+} halves;
+ogg_int64 whole;
+}
+#endif
+
+#if BYTE_ORDER==BIG_ENDIAN
+union magic {
+  struct {
+    ogg_int32_t hi;
+    ogg_int32_t lo;
+  } halves;
+  ogg_int64_t whole;
+}
+#endif</code></pre>
+<p>to</p>
+</blockquote>
+<blockquote>
+<pre><code>#if BYTE_ORDER==LITTLE_ENDIAN
+union magic {
+  struct {
+    ogg_int32_t lo;
+    ogg_int32_t hi;
+  } halves;
+ogg_int64_t whole;
+};
+#elif BYTE_ORDER==BIG_ENDIAN
+union magic {
+  struct {
+    ogg_int32_t hi;
+    ogg_int32_t lo;
+  } halves;
+  ogg_int64_t whole;
+};
+#endif</code></pre>
+<p>in order to satisfy the compilation.</p>
+</blockquote>
+<ol start="4" style="list-style-type: decimal">
+<li><p><code>androidbuildlib out_path=$PWD/.build_arms minsdkversion=19 target_abis=&quot;armeabi-v7a arm64-v8a&quot; configure_params=&quot;--with-sysroot=$ANDROID_NDK_SYSROOT&quot;</code></p>
+<p>Notice we specified NDK's sysroot via environment variable as well.</p></li>
+</ol>
+<h2 id="libvpx">libvpx</h2>
+<p>Building for <code>libvpx</code> separates into two commands.</p>
+<p><strong>Beware:</strong> Don't use shared library, only static library to avoid having problem later when build Android app with <code>gradle</code>.</p>
+<p><strong>Note:</strong> The result output libraries generated will have <code>libvpx.a</code> (without debug-info) and <code>libvpx_g.a</code> (with debug-info). So we use the latter. Also <code>make install</code> won't install debug-info library one to destination directory, you have to manually copy such file from the root project directory to destination yourself.</p>
+<h3 id="armeabi-v7a">armeabi-v7a</h3>
+<p>Make sure you installed <code>gcc-arm-linux-gnueabi</code> package.</p>
+<ul>
+<li><code>CROSS=arm-linux-gnueabi- ./configure --prefix=.build_armeabi-v7a --target=armv7-linux-gcc --sdk-path=$ANDROID_NDK_HOME --enable-pic --disable-examples --disable-docs --extra-cflags=&quot;-g&quot;</code></li>
+<li><code>make -j4</code></li>
+<li><code>make install</code></li>
+</ul>
+<h3 id="arm64-v8a">arm64-v8a</h3>
+<p>Make sure you installed <code>gcc-aarch64-linux-gnu</code> package.</p>
+<ul>
+<li><code>CROSS=aarch64-linux-gnu- ./configure --prefix=.build_arm64-v8a --target=arm64-linux-gcc --sdk-path=$ANDROID_NDK_HOME --enable-pic --disable-examples --disable-docs  --extra-cflags=&quot;-g&quot;</code></li>
+<li><code>make -j4</code></li>
+<li><code>make install</code></li>
+</ul>
+<h1 id="notes">Notes</h1>
+<ul>
+<li>We use dynamic shared library (<code>.so</code>) for <code>libSDL2</code>, the less we use static library (<code>.a</code>) to simplify and avoid problem of <code>SONAME</code> when the code load dynamic object via <code>dlopen()</code> at run-time.</li>
+</ul>
+<h1 id="author">Author</h1>
+<p>Copyright 2019 Wasin Thonkaew (wasin@abzi.co), 气包子 (Angry Baozi) [abzi.co].</p>
+<p>In case of reprinting, or to do anything with the article you're unsure of, please write me e-mail.</p>
+<p>This article published on June 19, 2019.</p>
+<p>Comments, or suggestions, please send me email.</p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>OpenBOR PC build uses normal <code>libvorbis</code>, but for mobile (embedded device), it uses <code>tremor</code> per se <code>libvorbis - tremor</code>.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>SDK version 19 is the version that has much better support in building autools-based library projects with NDK toolchain. So we chose this as minimum sdk version target.<a href="#fnref2">↩</a></p></li>
+</ol>
+</div>

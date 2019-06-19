@@ -6,3 +6,4 @@ OpenBOR Wiki - All Posts
 ========================
 
 * Cross-compile OpenBOR engine for Windows on Linux (manual step) - [Read Here](posts/crosscompile.html)
+* Build all Android dependencies via cross-compile on Linux - [Read Here](posts/androiddeps.html)
