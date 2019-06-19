@@ -7,17 +7,14 @@ The file structure is to host as website on server.
 
 This project doesn't aim to provide good looking website thus style. Pure focus on content as reference, and to be useful for OpenBOR users.
 
-# automate
+# make.sh
 
-During writintg a new article. Use `inotifywait` package (via `sudo apt install inotifywait`) to help
-in detecting changes then produce result `.html` file in `posts/` directory.
+Use `make.sh` to manage and edit a new/existing post.
 
-Use the following command to do so in different terminal window
-
-```
-while inotifywait -e modify src/crosscompile.txt || true; do pandoc src/crosscompile.txt -o 
-posts/crosscompile.html ; done
-```
+`./make.sh new <post.txt>` - in which `<post.txt>` can be either new or existing file. If it's the latter
+case, then it will ask you to confirm whether to overwrite or continue editing. Behind the scene,
+it listen to changes event of file, and open browser tab (`firefox` for now) for you to see the
+changes immediately.
 
 # License
 Copyrights 2019, Wasin Thonkaew, Angry Baozi (气包子) https://abzi.co.
