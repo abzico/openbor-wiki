@@ -86,7 +86,7 @@ if [ "$CMD" == "new" ]; then
 
   # wait and listen to file changes event for writing
   # note: don't try to execute this in the background, it's mess to clean up later
-  while inotifywait -e modify "src/$2" || true; do pandoc "src/$2" -o "posts/${2%%.*}.html" ; done
+  while inotifywait -e modify "src/$2" || true; do pandoc -B header.html "src/$2" -o "posts/${2%%.*}.html" ; done
   # show error messasge when things went wrong
   if [ $? -ne 0 ]; then
     echo "Can't listen to file changes event"
