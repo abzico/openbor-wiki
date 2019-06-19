@@ -310,3 +310,4 @@ Comments, or suggestions, please send me email.
 [NDK Downloads]: https://developer.android.com/ndk/downloads
 [androidbuildlib]: https://github.com/abzico/androidbuildlib
 [patchelf]: https://github.com/NixOS/patchelf
+[abzi.co]: https://abzi.co
