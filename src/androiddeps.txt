@@ -1,7 +1,7 @@
 Build all Android dependencies via cross-compile on Linux
 =========================================================
 
-(This post is as port of [OpenBOR wiki](../) series)
+(This post is as part of [OpenBOR wiki](../) series)
 
 To be able to build Android build of OpenBOR, we need to prepare all of required dependencies like
 what we did when we [cross-compile normal PC build](../posts/crosscompile.html).
@@ -12,7 +12,7 @@ Android toolchain to build autotools-based library to arm architecture.
 This post is written after my [PR](https://github.com/DCurrent/openbor/pull/162) of 
 adding 64-bit library support into OpenBOR has been merged. This post will mainly focus on how to 
 build all dependencies. But for how it is integrated into Android build system (`gradle`) as part
-of OpenBOR, please take a look in the link above.
+of OpenBOR, please take a look at my PR link earlier mentioned.
 
 System & Package Requirement
 ============================
