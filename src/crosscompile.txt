@@ -111,10 +111,10 @@ into
 
     COMMA           = ,
     RPATH_LIBS      = $(addprefix -Wl$(COMMA)-rpath$(COMMA),"$(LIBRARIES)")
-    LIBS            += $(RPATH_LIBS) -lSDL2 -lsetupapi -lhid
+    LIBS            += $(RPATH_LIBS) -lSDL2 -lsetupapi
 
 it fixes to properly feed `-rpath` parameter line by line into `gcc` toolchain in linking phase, and
-we also add `-lsetupapi -lhid` to fix the undefined symbols when linking with SDL2.
+we also add `-lsetupapi` to fix the undefined symbols when linking with SDL2.
 
 Finally, inside `ifdef BUILD_WEBM` change
 
@@ -282,6 +282,7 @@ Updates
 
 * 2019-06-13 - typo, use `--enable-shared` instead of `--enabled-shared` in `libvpx` section.
 * 2019-06-14 - added a missing section of finally building OpenBOR binary. Poor me :)
+* 2019-06-22 - removed `-lhid` as it's not necessary
 
 [abzi.co]: https://abzi.co
 [SDL2]: https://www.libsdl.org/

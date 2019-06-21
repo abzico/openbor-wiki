@@ -79,8 +79,8 @@
 <p>into</p>
 <pre><code>COMMA           = ,
 RPATH_LIBS      = $(addprefix -Wl$(COMMA)-rpath$(COMMA),&quot;$(LIBRARIES)&quot;)
-LIBS            += $(RPATH_LIBS) -lSDL2 -lsetupapi -lhid</code></pre>
-<p>it fixes to properly feed <code>-rpath</code> parameter line by line into <code>gcc</code> toolchain in linking phase, and we also add <code>-lsetupapi -lhid</code> to fix the undefined symbols when linking with SDL2.</p>
+LIBS            += $(RPATH_LIBS) -lSDL2 -lsetupapi</code></pre>
+<p>it fixes to properly feed <code>-rpath</code> parameter line by line into <code>gcc</code> toolchain in linking phase, and we also add <code>-lsetupapi</code> to fix the undefined symbols when linking with SDL2.</p>
 <p>Finally, inside <code>ifdef BUILD_WEBM</code> change</p>
 <pre><code>LIBS           += -lvpx</code></pre>
 <p>to</p>
@@ -187,6 +187,7 @@ LIBS            += $(RPATH_LIBS) -lSDL2 -lsetupapi -lhid</code></pre>
 <ul>
 <li>2019-06-13 - typo, use <code>--enable-shared</code> instead of <code>--enabled-shared</code> in <code>libvpx</code> section.</li>
 <li>2019-06-14 - added a missing section of finally building OpenBOR binary. Poor me :)</li>
+<li>2019-06-22 - removed <code>-lhid</code> as it's not necessary</li>
 </ul>
 <div class="footnotes">
 <hr />
