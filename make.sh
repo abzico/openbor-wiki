@@ -79,14 +79,14 @@ if [ "$CMD" == "new" ]; then
   fi
 
   # pre-convert so users can see the result of .html now
-  pandoc -B header.html "src/$2" -o "posts/${2%%.*}.html"
+  pandoc -c ../belug1.css -H header.html -B before.html -A after.html "src/$2" -o "posts/${2%%.*}.html"
 
   # now open the browser tab
   ${BROWSER} posts/${2%%.*}.html
 
   # wait and listen to file changes event for writing
   # note: don't try to execute this in the background, it's mess to clean up later
-  while inotifywait -e modify "src/$2" || true; do pandoc -B header.html "src/$2" -o "posts/${2%%.*}.html" ; done
+  while inotifywait -e modify "src/$2" || true; do pandoc -c ../belug1.css -H header.html -B before.html -A after.html "src/$2" -o "posts/${2%%.*}.html" ; done
   # show error messasge when things went wrong
   if [ $? -ne 0 ]; then
     echo "Can't listen to file changes event"

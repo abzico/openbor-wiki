@@ -16,6 +16,10 @@ case, then it will ask you to confirm whether to overwrite or continue editing. 
 it listen to changes event of file, and open browser tab (`firefox` for now) for you to see the
 changes immediately.
 
+# Credits
+
+* `belug1.css` and webpage style - taken from [The Linux Information Project](http://www.linfo.org)
+
 # License
 Copyrights 2019, Wasin Thonkaew, Angry Baozi (气包子) https://abzi.co.
 In case of reprinting, or to do anything with the article you're unsure of, please write me e-mail.
