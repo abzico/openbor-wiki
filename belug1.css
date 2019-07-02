@@ -1,4 +1,7 @@
 code {white-space: inherit;}
+.container { width: 80%;
+             margin: auto;
+           }
 p {text-align: left;}
 p.link {text-align: left;
         font-family: "Helvetica", "Arial";
