@@ -92,4 +92,22 @@ if [ "$CMD" == "new" ]; then
     echo "Can't listen to file changes event"
     exit 1
   fi
+
+# re-build all posts automatically
+elif [ "$CMD" == "build" ]; then
+  # get what to build
+  # if empty, then build for all posts
+  if [ -z "$2" ] || [ "$2" == "all" ]; then
+    echo "Build all posts"
+  # build index.html page
+  elif [ "$2" == "index" ]; then
+    echo "Build index.html"
+    pandoc -c belug1.css -H header.html -B before-min.html -A after-min.html index.txt -o index.html
+
+    # show error messasge when things went wrong
+    if [ $? -ne 0 ]; then
+      echo "Error building index.html"
+      exit 1
+    fi
+  fi
 fi
