@@ -99,6 +99,28 @@ elif [ "$CMD" == "build" ]; then
   # if empty, then build for all posts
   if [ -z "$2" ] || [ "$2" == "all" ]; then
     echo "Build all posts"
+
+
+    for file in src/*.txt;
+    do
+      echo "$file";
+
+      # get output filename without extension
+      oname=$(basename "$file")
+      # replace empty space with underscore
+      oname=${oname// /_}
+      # replace to use .html extension
+      oname=${oname%%.*}.html
+
+      pandoc -c ../belug1.css -H header.html -B before.html -A after.html "$file" -o "posts/${oname}";
+
+      # show error messasge when things went wrong
+      if [ $? -ne 0 ]; then
+        echo "Error building $file"
+        exit 1
+      fi
+    done
+
   # build index.html page
   elif [ "$2" == "index" ]; then
     echo "Build index.html"
