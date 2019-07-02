@@ -6,11 +6,12 @@
   <meta name="generator" content="pandoc" />
   <title></title>
   <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="../belug1.css" type="text/css" />
+  <meta name="author" content="Wasin Thonkaew" />
+  <meta name="viewport" content="width=device.width, initial-scale=1.0" />
 </head>
 <body>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="author" content="Wasin Thonkaew" />
-<meta name="viewport" content="width=device.width, initial-scale=1.0" />
+<table width="100%"><tbody><tr><td width="10%"></td><td width="80%">
 <h1 id="build-all-android-dependencies-via-cross-compile-on-linux">Build all Android dependencies via cross-compile on Linux</h1>
 <p>(This post is as part of <a href="../">OpenBOR wiki</a> series)</p>
 <p>To be able to build Android build of OpenBOR, we need to prepare all of required dependencies like what we did when we <a href="../posts/crosscompile.html">cross-compile normal PC build</a>.</p>
@@ -206,11 +207,9 @@ union magic {
 <ul>
 <li>We use dynamic shared library (<code>.so</code>) for <code>libSDL2</code>, the less we use static library (<code>.a</code>) to simplify and avoid problem of <code>SONAME</code> when the code load dynamic object via <code>dlopen()</code> at run-time.</li>
 </ul>
-<h1 id="author">Author</h1>
-<p>Copyright 2019 Wasin Thonkaew (wasin@abzi.co), 气包子 (Angry Baozi) <a href="https://abzi.co">abzi.co</a>.</p>
-<p>In case of reprinting, or to do anything with the article you're unsure of, please write me e-mail.</p>
-<p>This article published on June 19, 2019.</p>
-<p>Comments, or suggestions, please send me email.</p>
+<p><br />
+<br />
+<code>First published on June, 19, 2019</code></p>
 <div class="footnotes">
 <hr />
 <ol>
@@ -218,5 +217,19 @@ union magic {
 <li id="fn2"><p>SDK version 19 is the version that has much better support in building autools-based library projects with NDK toolchain. So we chose this as minimum sdk version target.<a href="#fnref2">↩</a></p></li>
 </ol>
 </div>
+<p><br /></p>
+<p><br /></p>
+<p><br /></p>
+<p><br /></p>
+<p><br /></p>
+
+<p class="copy">Written by Wasin Thonkaew<br />
+In case of reprinting, comments, suggestions<br />
+or to do anything with the article in which you are unsure of, please<br />
+write e-mail to wasin[add]abzi[dot]co<br /><br />
+
+Copyright &#169; 2019 Angry Baozi (气包子). All Rights Reserved.</p>
+
+</td><td width="10%"></td></tr></tbody></table>
 </body>
 </html>

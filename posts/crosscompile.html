@@ -6,11 +6,12 @@
   <meta name="generator" content="pandoc" />
   <title></title>
   <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="../belug1.css" type="text/css" />
+  <meta name="author" content="Wasin Thonkaew" />
+  <meta name="viewport" content="width=device.width, initial-scale=1.0" />
 </head>
 <body>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="author" content="Wasin Thonkaew" />
-<meta name="viewport" content="width=device.width, initial-scale=1.0" />
+<table width="100%"><tbody><tr><td width="10%"></td><td width="80%">
 <h1 id="cross-compile-openbor-engine-for-windows-on-linux">Cross-compile OpenBOR engine for Windows on Linux</h1>
 <p>This guide is for Linux users who want to provide Windows build for your Windows-based users with convenient on using your favourite system; in this case Linux.</p>
 <p>The steps presented here is <em>manual</em>. I might implement this as PR then send to OpenBOR on github to automate all this process in the future.</p>
@@ -179,16 +180,15 @@ LIBS            += $(RPATH_LIBS) -lSDL2 -lsetupapi</code></pre>
 <p>You can see the result in <code>engine/releases/WINDOWS/OpenBOR/</code>.</p>
 <h1 id="final-words">Final Words</h1>
 <p>That's it. You have successfully cross-compile OpenBOR engine for Windows on Linux. Now you can distribute the result <code>OpenBOR.exe</code> along with your <code>.pak</code> file to your Windows users without a need to also distribute its dependency <code>.dll</code> file.</p>
-<h1 id="author">Author</h1>
-<p>Copyright 2019 Wasin Thonkaew (wasin@abzi.co), 气包子 (Angry Baozi) <a href="https://abzi.co">abzi.co</a>. In case of reprinting, or to do anything with the article you're unsure of, please write me e-mail.</p>
-<p>This article published on June 9, 2019.</p>
-<p>Comments, or suggestions, please send me email.</p>
 <h1 id="updates">Updates</h1>
 <ul>
 <li>2019-06-13 - typo, use <code>--enable-shared</code> instead of <code>--enabled-shared</code> in <code>libvpx</code> section.</li>
 <li>2019-06-14 - added a missing section of finally building OpenBOR binary. Poor me :)</li>
 <li>2019-06-22 - removed <code>-lhid</code> as it's not necessary</li>
 </ul>
+<p><br />
+<br />
+<code>First published on June, 9, 2019</code></p>
 <div class="footnotes">
 <hr />
 <ol>
@@ -196,5 +196,19 @@ LIBS            += $(RPATH_LIBS) -lSDL2 -lsetupapi</code></pre>
 <li id="fn2"><p>Use <code>tree</code> package to list file structure to get result as shown.<a href="#fnref2">↩</a></p></li>
 </ol>
 </div>
+<p><br /></p>
+<p><br /></p>
+<p><br /></p>
+<p><br /></p>
+<p><br /></p>
+
+<p class="copy">Written by Wasin Thonkaew<br />
+In case of reprinting, comments, suggestions<br />
+or to do anything with the article in which you are unsure of, please<br />
+write e-mail to wasin[add]abzi[dot]co<br /><br />
+
+Copyright &#169; 2019 Angry Baozi (气包子). All Rights Reserved.</p>
+
+</td><td width="10%"></td></tr></tbody></table>
 </body>
 </html>

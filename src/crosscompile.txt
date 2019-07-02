@@ -268,21 +268,16 @@ without a need to also distribute its dependency `.dll` file.
 [^1]: OpenBOR currently only support 32-bit Windows executable.
 [^2]: Use `tree` package to list file structure to get result as shown.
 
-Author
-======
-Copyright 2019 Wasin Thonkaew (wasin@abzi.co), 气包子 (Angry Baozi) [abzi.co].
-In case of reprinting, or to do anything with the article you're unsure of, please write me e-mail.
-
-This article published on June 9, 2019.
-
-Comments, or suggestions, please send me email.
-
 Updates
 ===
 
 * 2019-06-13 - typo, use `--enable-shared` instead of `--enabled-shared` in `libvpx` section.
 * 2019-06-14 - added a missing section of finally building OpenBOR binary. Poor me :)
 * 2019-06-22 - removed `-lhid` as it's not necessary
+
+\
+\
+`First published on June, 9, 2019`
 
 [abzi.co]: https://abzi.co
 [SDL2]: https://www.libsdl.org/

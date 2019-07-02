@@ -297,15 +297,9 @@ Notes
 * We use dynamic shared library (`.so`) for `libSDL2`, the less we use static library (`.a`) to
 simplify and avoid problem of `SONAME` when the code load dynamic object via `dlopen()` at run-time.
 
-Author
-======
-Copyright 2019 Wasin Thonkaew (wasin@abzi.co), 气包子 (Angry Baozi) [abzi.co].
-
-In case of reprinting, or to do anything with the article you're unsure of, please write me e-mail.
-
-This article published on June 19, 2019.
-
-Comments, or suggestions, please send me email.
+\
+\
+`First published on June, 19, 2019`
 
 [NDK Downloads]: https://developer.android.com/ndk/downloads
 [androidbuildlib]: https://github.com/abzico/androidbuildlib
